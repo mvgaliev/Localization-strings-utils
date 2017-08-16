@@ -1,7 +1,8 @@
 
 export enum SourceType {
     Capabilities,
-    LocalizationStrings
+    LocalizationStrings,
+    UtilsRepo
 }
 
 export class IndexedObjects {

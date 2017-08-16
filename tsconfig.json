@@ -11,6 +11,7 @@
   "include": [
     "node_modules/@types/",
     "typings.d.ts",
-    "src/index.ts"
+    "src/index.ts",
+    "src/updateStringsFromCapabilities.ts"
   ]  
 }

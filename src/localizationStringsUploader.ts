@@ -12,36 +12,36 @@ export class LocalizationStringsUploader {
     private static authorName: string = "pbicvbot";
     private static authorEmail: string = "pbicvbot@microsoft.com";
 
-    public static async UploadStrings(destinationJsons: IndexedLocalizationStrings, updatedVisuals: IndexedObjects) {
+    public static async UploadStringsToCommonRepo(updatedVisuals: IndexedObjects) {
         let repository: Git.Repository,
             index: Git.Index,
             oid: Git.Oid,
             remote: Git.Remote;
 
-        GitRepoService.CloneRepo(LocalizationStringsUploader.localizationUtilsRepoUrl)
-            .then(() => {
-                let date: Date = new Date();
+        let date: Date = new Date();
 
                 let branchName: string = LocalizationStringsUploader.authorName 
-                     + "_"
-                     + (date.getMonth() + 1)
+                     + "_" + (date.getMonth() + 1)                     
                      + "_" + date.getDate() 
                      + "_" + date.getFullYear() 
                      + "_" + date.getHours()
                      + "_" + date.getMinutes()
                      + "_" + date.getSeconds();
 
+        GitRepoService.CloneRepo(LocalizationStringsUploader.localizationUtilsRepoUrl1)
+            .then(() => {               
                 Git.Repository
                     .open(LocalizationStringsUploader.localizationUtilsPath)
                     .then((repo) => {
                         repository = repo;
                         return repo.getHeadCommit()
+                    })
                     .then((commit) => {
-                        return repo.createBranch(
+                        return repository.createBranch(
                             branchName,
                             commit,
                             false,
-                            repo.defaultSignature(),
+                            repository.defaultSignature(),
                             "Created " + branchName + " on HEAD");
                         });
                     })
@@ -114,6 +114,111 @@ export class LocalizationStringsUploader {
 
                         throw error;                  
                     });
-            });      
-    }
+    }      
+    
+
+    public static async UploadStringsToAllRepos(updatedVisuals: IndexedObjects) {
+        let repository: Git.Repository,
+            index: Git.Index,
+            oid: Git.Oid,
+            remote: Git.Remote,
+            promises: Promise<any>[] = [],
+            date: Date = new Date(),
+            branchName: string = LocalizationStringsUploader.authorName 
+                        + "_" + (date.getMonth() + 1)                     
+                        + "_" + date.getDate() 
+                        + "_" + date.getFullYear() 
+                        + "_" + date.getHours()
+                        + "_" + date.getMinutes()
+                        + "_" + date.getSeconds();
+
+        for (let visualName in updatedVisuals) {
+            let json: {} = updatedVisuals[visualName],
+            url: string = "https://github.com/mvgaliev/" + visualName + ".git";
+
+            promises.push(GitRepoService.CloneRepo(url)
+                .then(() => {                   
+
+                    Git.Repository
+                        .open(LocalizationStringsUploader.localizationUtilsPath)
+                        .then((repo) => {
+                            repository = repo;
+                            return repo.getHeadCommit();
+                        })
+                        .then((commit) => {
+                            return repository.createBranch(
+                                branchName,
+                                commit,
+                                false,
+                                repository.defaultSignature(),
+                                "Created " + branchName + " on HEAD");
+                            });
+                        })
+                        .then(() => {
+                            let checkoutOpts: Git.CheckoutOptions = {
+                                checkoutStrategy: Git.Checkout.STRATEGY.FORCE
+                            };
+
+                            return repository.checkoutBranch(branchName, checkoutOpts);
+                        })
+                        .then(() => {
+                            let opt: any = { spaces: "\t" };
+                            FS.writeJSONSync("repos/" + visualName + "/stringResources/en-US/resources.resjson", json, opt);
+                            FS.writeJSONSync("repos/" + visualName + "/stringResources/en-US.json", json, opt);
+                        })
+                        .then(() => {
+                            return repository.refreshIndex();
+                        })               
+                        .then((i: Git.Index) => {
+                            index = i;
+                        })
+                        .then(() => {
+                            index.addByPath(visualName + "/stringResources/en-US/resources.resjson");
+                            index.addByPath(visualName + "/stringResources/en-US.json");
+                        })
+                        .then(() => {
+                            index.write();
+                            return index.writeTree();
+                        })
+                        .then((o: Git.Oid) => {
+                            oid = o;
+                            return Git.Reference.nameToId(repository, "HEAD");
+                        })
+                        .then((head) => {
+                            return repository.getCommit(head);
+                        })
+                        .then((parent) => {
+                            let author: Git.Signature = Git.Signature.now(LocalizationStringsUploader.authorName, LocalizationStringsUploader.authorEmail);
+                            let committer: Git.Signature = Git.Signature.now(LocalizationStringsUploader.authorName, LocalizationStringsUploader.authorEmail);
+
+                            return repository.createCommit("HEAD", author, committer, "updated localization strings", oid, [parent]);                            
+                        })
+                        .then((commitId) => {
+                            console.log("New Commit:", commitId.tostrS());
+                        })
+                        .then(()=> {
+                            return repository.getRemote("origin", () => {});
+                        })
+                        .then((remoteResult: Git.Remote) => {  
+                            remote = remoteResult;
+                            let options: any = {
+                                callbacks: {
+                                    credentials: (url: string, userName: string) => {
+                                        return Git.Cred.userpassPlaintextNew(LocalizationStringsUploader.token, 'x-oauth-basic');
+                                    }
+                                },
+                                certificateCheck: function() { return 1; },
+
+                            };
+                            let opt: any = null;
+                            return remoteResult.push(["refs/heads/"+ branchName + ":refs/heads/"+ branchName], options, opt);
+                        })
+                        .catch((error)=> {
+                            console.log(error);
+
+                            throw error;                  
+                        })
+                );
+        };
+    }            
 }
