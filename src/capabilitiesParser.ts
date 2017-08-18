@@ -31,6 +31,20 @@ export class CapabilitiesParser {
         return strings;
     }
 
+    private static parseObject(obj: any, strings: DisplayNameAndKeyPairs) {        
+        for (let prop in obj) {
+            let property: any = obj[prop];
+
+            if (property.displayName && property.displayNameKey && !strings[property.displayNameKey]) {
+                strings[property.displayNameKey] = property.displayName;
+            }
+
+            if (typeof(property) === "object" ) {
+                CapabilitiesParser.parseObject(property, strings);
+            }
+        }
+    }
+
     private static parseObjects(objects: {[key: string]: {}}): DisplayNameAndKeyPairs {
         let strings: DisplayNameAndKeyPairs = {};
         for (let key in objects) {
@@ -41,13 +55,7 @@ export class CapabilitiesParser {
             }
 
             if (object.properties) {
-                for (let key in object.properties) {
-                    let property: any = object.properties[key];
-
-                    if (property.displayName && property.displayNameKey && !strings[property.displayNameKey]) {
-                        strings[property.displayNameKey] = property.displayName;
-                    }
-                }
+                CapabilitiesParser.parseObject(object.properties, strings);
             }
         }
 

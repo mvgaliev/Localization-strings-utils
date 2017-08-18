@@ -7,7 +7,7 @@ import { LocalizationStringsUpdater } from "./localizationStringsUpdater";
 
 class LocalizationStringsUtils {
     public static async Parse() {
-        let sourceJsons: IndexedObjects = await JsonLoader.GetJsonsFromGithub(SourceType.Capabilities),
+        let sourceJsons: IndexedObjects = await JsonLoader.GetJsonsFromGithub(SourceType.LocalizationStrings),
             sourceStrings: IndexedLocalizationStrings = CapabilitiesParser.parseCapabilities(sourceJsons),
             destinationJsons: IndexedObjects = await JsonLoader.GetJsonsFromGithub(SourceType.UtilsRepo);
 
