@@ -1,8 +1,8 @@
-import { DisplayNameAndKeyPairs, IndexedLocalizationStrings, IndexedObjects } from './models';
+import { DisplayNameAndKeyPairs, IndexedObjects } from './models';
 
 export class CapabilitiesParser {
-    public static parseCapabilities(jsons: IndexedObjects): IndexedLocalizationStrings {
-        let localizationStrings: IndexedLocalizationStrings = new IndexedLocalizationStrings();
+    public static parseCapabilities(jsons: IndexedObjects): IndexedObjects {
+        let localizationStrings: IndexedObjects = new IndexedObjects();
 
         for (let jsonKey in jsons) {
             

@@ -17,14 +17,17 @@
   "license": "MIT",
   "devDependencies": {
     "@types/fs-extra": "^4.0.0",
+    "@types/github": "^7.1.0",
     "@types/node": "^8.0.19",
     "@types/nodegit": "^0.18.1",
     "@types/request": "^2.0.0",
     "@types/request-promise-native": "^1.0.6",
     "fs-extra": "^4.0.1",
+    "github": "^9.2.0",
     "nodegit": "^0.20.1",
     "request": "^2.81.0",
     "request-promise-native": "^1.0.4",
+    "simple-git": "^1.75.0",
     "ts-node": "^3.3.0",
     "typescript": "^2.4.2"
   }

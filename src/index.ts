@@ -8,10 +8,9 @@ import { LocalizationStringsUpdater } from "./localizationStringsUpdater";
 class LocalizationStringsUtils {
     public static async Parse() {
         let sourceJsons: IndexedObjects = await JsonLoader.GetJsonsFromGithub(SourceType.LocalizationStrings),
-            sourceStrings: IndexedLocalizationStrings = CapabilitiesParser.parseCapabilities(sourceJsons),
             destinationJsons: IndexedObjects = await JsonLoader.GetJsonsFromGithub(SourceType.UtilsRepo);
 
-        let updatedVisuals: IndexedObjects = LocalizationStringsUpdater.UpdateDestinationStrings(sourceStrings, destinationJsons);
+        let updatedVisuals: IndexedObjects = LocalizationStringsUpdater.UpdateDestinationJson(sourceJsons, destinationJsons);
         await LocalizationStringsUploader.UploadStringsToCommonRepo(updatedVisuals);                        
     }
 }

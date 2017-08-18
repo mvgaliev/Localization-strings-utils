@@ -1,18 +1,19 @@
 import * as Git from "nodegit";
 import * as FS from "fs-extra";
 import { GitRepoService } from "./gitRepoService";
-import { DisplayNameAndKeyPairs, IndexedLocalizationStrings, IndexedObjects, SourceType } from "./models";
+import { DisplayNameAndKeyPairs, IndexedObjects, SourceType } from "./models";
+import * as GitHubApi from "github";
 
 export class LocalizationStringsUploader {
-    private static msGithubUrl: string = "https://github.com/mvgaliev/"; //"https://github.com/Microsoft/";
+    private static msGithubUrl: string = "https://github.com/pbicvbot/"; //"https://github.com/Microsoft/"; //"https://github.com/mvgaliev/";
     private static localizationUtilsRepoUrl: string = LocalizationStringsUploader.msGithubUrl + "powerbi-visuals-utils-localizationutils.git";
 
     private static reposPath: string = "./repos/";
     private static localizationUtilsPath: string = LocalizationStringsUploader.reposPath + "localizationutils";
     private static resjsonPath: string = "/en-US/resources.resjson";
 
-    //private static token: string = "";bot
-    private static token: string = "";
+    private static token: string = "";//bot
+    //private static token: string = "";
     private static authorName: string = "pbicvbot";
     private static authorEmail: string = "pbicvbot@microsoft.com";
 
@@ -23,13 +24,40 @@ export class LocalizationStringsUploader {
 
         let date: Date = new Date();
 
-                let branchName: string = LocalizationStringsUploader.authorName
-                     + "_" + (date.getMonth() + 1)
-                     + "_" + date.getDate()
-                     + "_" + date.getFullYear()
-                     + "_" + date.getHours()
-                     + "_" + date.getMinutes()
-                     + "_" + date.getSeconds();
+        
+
+        let github: GitHubApi = new GitHubApi({
+            debug: true,
+            protocol: "https",
+            host: "api.github.com",
+            Promise: require('bluebird'),
+            followRedirects: false,
+            timeout: 5000
+        });
+
+        github.authenticate({
+            type: "token",
+            token: "58ce7bde50beca4ed327c2bbf0a1c65131cc23d7"
+        });
+
+        github.gitdata.getCommit({
+            owner: "Microsoft",
+            repo: "powerbi-visuals-gantt",
+            sha: ""
+        });
+
+        let branchName: string = LocalizationStringsUploader.authorName
+                + "_" + (date.getMonth() + 1)
+                + "_" + date.getDate()
+                + "_" + date.getFullYear()
+                + "_" + date.getHours()
+                + "_" + date.getMinutes()
+                + "_" + date.getSeconds();
+
+        if (FS.existsSync("./repos/")) {
+            console.log("removing repos folder");
+            FS.removeSync("./repos/");
+        }
 
         GitRepoService.CloneRepo(LocalizationStringsUploader.localizationUtilsRepoUrl)
                .then(() => {
@@ -50,14 +78,18 @@ export class LocalizationStringsUploader {
                         })
                         .then(() => {
                             let opt: any = { spaces: "\t" };
+                            let promises: Promise<any>[] = [];
 
                             for (let visualName in updatedVisuals) {
                                 let json: {} = updatedVisuals[visualName];
-                                FS.writeJSONSync("repos/localizationutils/" + visualName + LocalizationStringsUploader.resjsonPath, json, opt);
+                                promises.push(FS.writeJSON("repos/localizationutils/" + visualName + LocalizationStringsUploader.resjsonPath, json, opt));
                             }
 
+                            return Promise.all(promises);                            
+                        })  
+                        .then(() => {
                             return repository.refreshIndex();
-                        })             
+                        })           
                         .then((i: Git.Index) => {
                             index = i;
 
@@ -65,7 +97,9 @@ export class LocalizationStringsUploader {
                                 index.addByPath(visualName + "/en-US/resources.resjson");
                             }
 
-                            index.write();
+                            return (<any>index.write());                       
+                        })
+                        .then(() => {
                             return index.writeTree();
                         })
                         .then((o: Git.Oid) => {
@@ -76,7 +110,10 @@ export class LocalizationStringsUploader {
                             return repository.getCommit(head);
                         })
                         .then((parent) => {
-                            return LocalizationStringsUploader.CreateCommit(repository, oid, [parent])                            
+                            let author: Git.Signature = Git.Signature.now(LocalizationStringsUploader.authorName, LocalizationStringsUploader.authorEmail);
+                            let committer: Git.Signature = Git.Signature.now(LocalizationStringsUploader.authorName, LocalizationStringsUploader.authorEmail);
+
+                            return repository.createCommit("HEAD", author, committer, "updated localization strings", oid, [parent]);                        
                         })
                         .then((commitId)=> {
                             console.log("New Commit:", commitId.tostrS());
@@ -86,7 +123,10 @@ export class LocalizationStringsUploader {
                         .then((remoteResult: Git.Remote) => {
                             let options: any = LocalizationStringsUploader.BuildPushOptions();
 
-                            return remoteResult.push(["refs/heads/" + branchName + ":refs/heads/" + branchName], options, <any>null);
+                            return remoteResult.push(["refs/heads/" + branchName + ":refs/heads/" + branchName], options, () => {});
+                        })
+                        .then(()=> {
+                            console.log("Branch: " + branchName + " successfully pushed");
                         })
                         .catch((error)=> {
                             console.log(error);
@@ -179,10 +219,10 @@ export class LocalizationStringsUploader {
                         .then((remoteResult: Git.Remote) => {
                             let options: any = LocalizationStringsUploader.BuildPushOptions();
 
-                            return remoteResult.push(["refs/heads/" + branchName + ":refs/heads/" + branchName], options, () =>{});
+                            return remoteResult.push(["refs/heads/" + branchName + ":refs/heads/" + branchName], options, () => {});
                         })
                         .then(()=> {
-                            console.log("Branch: " + branchName + " successfully pushed")
+                            console.log("Branch: " + branchName + " successfully pushed");
                         })
                         .catch((error)=> {
                             console.log(error);
@@ -211,13 +251,6 @@ export class LocalizationStringsUploader {
                             };
 
         return repository.checkoutBranch(branchName, checkoutOpts);
-    }
-
-    private static CreateCommit(repository: Git.Repository, oid: Git.Oid, parent: any[]): Promise<Git.Oid> {
-        let author: Git.Signature = Git.Signature.now(LocalizationStringsUploader.authorName, LocalizationStringsUploader.authorEmail);
-        let committer: Git.Signature = Git.Signature.now(LocalizationStringsUploader.authorName, LocalizationStringsUploader.authorEmail);
-
-        return repository.createCommit("HEAD", author, committer, "updated localization strings", oid, [parent]);
     }
 
     private static BuildPushOptions(): any {

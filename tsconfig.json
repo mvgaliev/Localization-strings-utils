@@ -12,6 +12,7 @@
     "node_modules/@types/",
     "typings.d.ts",
     "src/index.ts",
-    "src/updateStringsFromCapabilities.ts"
+    "src/updateStringsFromCapabilities.ts",
+    "src/updateStringsFromCommonRepo.ts"
   ]  
 }

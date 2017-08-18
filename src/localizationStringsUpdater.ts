@@ -1,12 +1,12 @@
-import { DisplayNameAndKeyPairs, IndexedLocalizationStrings, IndexedObjects, SourceType } from "./models";
+import { DisplayNameAndKeyPairs, IndexedObjects, SourceType } from "./models";
 
 export class LocalizationStringsUpdater {
-    public static UpdateDestinationStrings(indexedSourceStrings: IndexedLocalizationStrings, indexedDestinationStrings: IndexedObjects): IndexedObjects {
+    public static UpdateDestinationJson(indexedSourceStrings: IndexedObjects, indexedDestinationJson: IndexedObjects): IndexedObjects {
         let updatedVisuals: IndexedObjects = new IndexedObjects();
 
         for (let visualName in indexedSourceStrings) {
             let sourceStrings: DisplayNameAndKeyPairs = indexedSourceStrings[visualName],
-                destinationStrings: DisplayNameAndKeyPairs = indexedDestinationStrings[visualName],
+                destinationStrings: DisplayNameAndKeyPairs = indexedDestinationJson[visualName],
                 isUpdated: boolean = false;
 
             for (let displayNameKey in sourceStrings) {
