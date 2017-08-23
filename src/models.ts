@@ -6,7 +6,11 @@ export enum SourceType {
 }
 
 export class IndexedObjects {
-    [VisualName: string]: {};
+    [Index: string]: {};
+}
+
+export class IndexedFoldersSet {
+    [VisualName: string]:  IndexedObjects;
 }
 
 export class DisplayNameAndKeyPairs {

@@ -1,17 +1,16 @@
-import { DisplayNameAndKeyPairs, IndexedObjects, SourceType } from "./models";
+import { DisplayNameAndKeyPairs, IndexedObjects, IndexedFoldersSet, SourceType } from "./models";
 import { CapabilitiesParser } from "./capabilitiesParser";
 import { JsonLoader } from "./jsonLoader";
-import { GitRepoService } from "./gitRepoService";
 import { LocalizationStringsUploader } from "./localizationStringsUploader";
 import { LocalizationStringsUpdater } from "./localizationStringsUpdater";
 
 class LocalizationStringsUtils {
     public static async Parse() {
-        let sourceJsons: IndexedObjects = await JsonLoader.GetJsonsFromGithub(SourceType.Capabilities),
-            sourceStrings: IndexedObjects = CapabilitiesParser.parseCapabilities(sourceJsons),
-            destinationJsons: IndexedObjects = await JsonLoader.GetJsonsFromGithub(SourceType.LocalizationStrings);
+        let sourceJsons: IndexedFoldersSet = await JsonLoader.GetJsonsWithFoldersFromGithub(SourceType.Capabilities),
+            sourceStrings: IndexedFoldersSet = CapabilitiesParser.parseCapabilities(sourceJsons),
+            destinationJsons: IndexedFoldersSet = await JsonLoader.GetJsonsWithFoldersFromGithub(SourceType.LocalizationStrings);
 
-        let updatedVisuals: IndexedObjects = LocalizationStringsUpdater.UpdateDestinationJson(sourceStrings, destinationJsons);
+        let updatedVisuals: IndexedObjects = LocalizationStringsUpdater.UpdateDestinationFolders(sourceStrings, destinationJsons);
         await LocalizationStringsUploader.UploadStringsToAllRepos(updatedVisuals);                        
     }
 }

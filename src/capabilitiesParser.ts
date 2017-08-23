@@ -1,20 +1,25 @@
-import { DisplayNameAndKeyPairs, IndexedObjects } from './models';
+import { DisplayNameAndKeyPairs, IndexedObjects, IndexedFoldersSet } from './models';
 
 export class CapabilitiesParser {
-    public static parseCapabilities(jsons: IndexedObjects): IndexedObjects {
-        let localizationStrings: IndexedObjects = new IndexedObjects();
+    public static parseCapabilities(jsons: IndexedFoldersSet): IndexedFoldersSet {
+        let localizationStrings: IndexedFoldersSet = new IndexedFoldersSet();
 
-        for (let jsonKey in jsons) {
+        for (let visualName in jsons) {
             
-            let json: any = jsons[jsonKey];
+            let folders: any = jsons[visualName];
 
-            let currentLocStrings: DisplayNameAndKeyPairs = new DisplayNameAndKeyPairs();
-            let dataRolesStrings: DisplayNameAndKeyPairs = CapabilitiesParser.parseDataRoles(<any[]>json.dataRoles);
-            let objectsStrings: DisplayNameAndKeyPairs = CapabilitiesParser.parseObjects(<{[key: string]: string}>json.objects);
+            for (let index in folders) {
+                let capabilities: any = folders[index];
 
-            Object.assign(currentLocStrings, dataRolesStrings, objectsStrings);
+                let currentLocStrings: DisplayNameAndKeyPairs = new DisplayNameAndKeyPairs();
+                let dataRolesStrings: DisplayNameAndKeyPairs = CapabilitiesParser.parseDataRoles(<any[]>capabilities.dataRoles);
+                let objectsStrings: DisplayNameAndKeyPairs = CapabilitiesParser.parseObjects(<{[key: string]: string}>capabilities.objects);
 
-            localizationStrings[jsonKey] = currentLocStrings;
+                Object.assign(currentLocStrings, dataRolesStrings, objectsStrings);
+
+                localizationStrings[visualName] = new IndexedObjects();
+                localizationStrings[visualName]["en-US"] = currentLocStrings;
+            }
         }
 
         return localizationStrings;
