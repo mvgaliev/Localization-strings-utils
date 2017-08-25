@@ -11,7 +11,7 @@
   "include": [
     "node_modules/@types/",
     "typings.d.ts",
-    "src/index.ts",
+    "src/allResourcesToUtilsRepo.ts",
     "src/updateStringsFromCapabilities.ts",
     "src/updateStringsFromCommonRepo.ts"
   ]  

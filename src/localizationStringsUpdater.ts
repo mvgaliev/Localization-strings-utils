@@ -39,18 +39,27 @@ export class LocalizationStringsUpdater {
                 destinationStrings: DisplayNameAndKeyPairs = indexedDestinationJson[visualName][folderName],
                 isUpdated: boolean = false;
 
-                for (let displayNameKey in sourceStrings) {
-                    let displayName: string = sourceStrings[displayNameKey];
-
-                    if (!destinationStrings[displayNameKey] || destinationStrings[displayNameKey] !== displayName) {
-                        console.log("updated " + visualName + " " + folderName + " " + displayName)
-                        destinationStrings[displayNameKey] = displayName;
-                        isUpdated = true;
+                if (!destinationStrings) {                                     
+                    destinationStrings = sourceStrings;
+                    isUpdated = true;   
+                    console.log("added " + visualName + " " + folderName);
+                } else {
+                    for (let displayNameKey in sourceStrings) {
+                        let displayName: string = sourceStrings[displayNameKey];
+                        
+                        if (!destinationStrings[displayNameKey] || destinationStrings[displayNameKey] !== displayName) {
+                            console.log("updated " + visualName + " " + folderName + " " + displayName)
+                            destinationStrings[displayNameKey] = displayName;
+                            isUpdated = true;
+                        }
                     }
-                }
+                }                
 
-                if (isUpdated) {
-                    updatedVisuals[visualName] = new IndexedObjects();
+                if (isUpdated) {                    
+                    if (!updatedVisuals[visualName]) {
+                        updatedVisuals[visualName] = new IndexedObjects();
+                    }
+                    
                     updatedVisuals[visualName][folderName] = destinationStrings;
                 }
             }           

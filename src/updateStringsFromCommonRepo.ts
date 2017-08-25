@@ -10,7 +10,7 @@ class LocalizationStringsUtils {
             destinationJsons: IndexedObjects = await JsonLoader.GetJsonsWithFoldersFromGithub(SourceType.LocalizationStrings);
 
         let updatedVisuals: IndexedObjects = LocalizationStringsUpdater.UpdateDestinationFolders(sourceJsons, destinationJsons);
-        await LocalizationStringsUploader.UploadStringsToAllRepos(updatedVisuals);                        
+        await LocalizationStringsUploader.UploadStringsToAllRepos(updatedVisuals, SourceType.UtilsRepo);                        
     }
 }
 

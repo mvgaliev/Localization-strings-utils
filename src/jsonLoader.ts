@@ -5,6 +5,11 @@ import * as GitHubApi from "github";
 const data = require('../repositories.json');
 
 export class JsonLoader {
+    private static microsoftPath: string = "https://raw.githubusercontent.com/Microsoft/";
+    private static localizationUtilsRepoName: string = "powerbi-visuals-utils-localizationutils";
+    private static capabilities: string = "capabilities";
+    private static microsoft: string = "Microsoft";
+
     public static GetJsonByUrl(url: string) {
         return get({
             url: url
@@ -13,14 +18,14 @@ export class JsonLoader {
 
     private static BuildUrl(visualName: string, type: SourceType, folder?: string): string {
         if (type === SourceType.Capabilities) {
-            return "https://raw.githubusercontent.com/Microsoft/" + visualName + "/master/capabilities.json";
+            return JsonLoader.microsoftPath + visualName + "/master/capabilities.json";
         } else if (type === SourceType.UtilsRepo) {
-            return "https://raw.githubusercontent.com/Microsoft/powerbi-visuals-utils-localizationutils/master/" 
+            return JsonLoader.microsoftPath + JsonLoader.localizationUtilsRepoName + "/master/" 
             + visualName 
             + (folder ? "/" + folder + "/resources.resjson" : "/en-US/resources.resjson");
         }
 
-        return "https://raw.githubusercontent.com/Microsoft/" 
+        return JsonLoader.microsoftPath
             + visualName 
             + "/master/stringResources/" 
             + (folder ? folder : "en-US") 
@@ -77,7 +82,7 @@ export class JsonLoader {
 
         github.authenticate({
             type: "oauth",
-            token: "d6a062af81139063fd3e4d720c057136d1cbe427"
+            token: "eccad370ecb28b6fcb6128ff549832b37499464e"
         });        
 
         for (let visualName in data) {
@@ -85,12 +90,12 @@ export class JsonLoader {
                 let folderNames: string[] = [];
 
                 if (repoType === SourceType.Capabilities) {
-                    folderNames[0] = "capabilities";
+                    folderNames[0] = JsonLoader.capabilities;
                 } else if (repoType === SourceType.UtilsRepo) {                 
                      folderNames = await github.repos.getContent({
-                        owner: "Microsoft",
+                        owner: JsonLoader.microsoft,
                         path: visualName,
-                        repo: "powerbi-visuals-utils-localizationutils"
+                        repo: JsonLoader.localizationUtilsRepoName 
                     })
                     .then((folders): string[] => {
                         if (folders && folders.data.length && folders.data[0].name) {
