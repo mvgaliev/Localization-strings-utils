@@ -6,7 +6,7 @@ export class LocalizationStringsUploader {
     private static ms: string = "Microsoft";
     private static enUs: string = "en-US";
 
-    private static token: string = "";
+    private static token: string = <string>process.env.token;
     private static pbicvbot: string = "pbicvbot";
 
     public static async UploadStringsToCommonRepo(updatedVisuals: IndexedFoldersSet) {
@@ -25,7 +25,7 @@ export class LocalizationStringsUploader {
 
         github.authenticate({
             type: "oauth",
-            token: ""
+            token: LocalizationStringsUploader.token
         });
 
         let res = await github.gitdata.getReference({
@@ -159,7 +159,7 @@ export class LocalizationStringsUploader {
 
         github.authenticate({
             type: "oauth",
-            token: ""
+            token: LocalizationStringsUploader.token
         });
 
         for (let visualName in updatedVisuals) {

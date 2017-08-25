@@ -9,6 +9,8 @@ export class JsonLoader {
     private static localizationUtilsRepoName: string = "powerbi-visuals-utils-localizationutils";
     private static capabilities: string = "capabilities";
     private static microsoft: string = "Microsoft";
+    private static enUs: string = "en-US";
+    private static token: string = <string>process.env.token;
 
     public static GetJsonByUrl(url: string) {
         return get({
@@ -28,7 +30,7 @@ export class JsonLoader {
         return JsonLoader.microsoftPath
             + visualName 
             + "/master/stringResources/" 
-            + (folder ? folder : "en-US") 
+            + (folder ? folder : JsonLoader.enUs) 
             + "/resources.resjson";   
     }
 
@@ -82,7 +84,7 @@ export class JsonLoader {
 
         github.authenticate({
             type: "oauth",
-            token: "eccad370ecb28b6fcb6128ff549832b37499464e"
+            token: JsonLoader.token
         });        
 
         for (let visualName in data) {
@@ -104,7 +106,7 @@ export class JsonLoader {
                         return [];
                     });
                 } else {
-                    folderNames[0] = "en-US";
+                    folderNames[0] = JsonLoader.enUs;
                 }
 
                 for (let i in folderNames) {
