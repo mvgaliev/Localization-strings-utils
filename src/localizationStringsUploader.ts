@@ -138,7 +138,7 @@ export class LocalizationStringsUploader {
         })
         .then(() => {
             return github.pullRequests.getAll({
-                owner: "mvgaliev",
+                owner: LocalizationStringsUploader.ms,
                 repo: LocalizationStringsUploader.localizationUtilsRepoName 
             })
             .then((pullRequests) => {
@@ -153,7 +153,7 @@ export class LocalizationStringsUploader {
 
                 return github.pullRequests.create({
                     base: "master",
-                    owner: "mvgaliev",
+                    owner: LocalizationStringsUploader.ms,
                     repo: LocalizationStringsUploader.localizationUtilsRepoName,
                     head: "pbicvbot:master",
                     title: "Localization strings update"
@@ -285,7 +285,7 @@ export class LocalizationStringsUploader {
                     })
                     .then(() => {
                         return github.pullRequests.getAll({
-                            owner: "mvgaliev",
+                            owner: LocalizationStringsUploader.ms,
                             repo: visualName 
                         })
                         .then((pullRequests) => {
@@ -294,13 +294,13 @@ export class LocalizationStringsUploader {
                                 let pr = pullRequests.data[i];
 
                                 if (pr.head.label === "pbicvbot:master") {
-                                    return 
+                                    return;
                                 }
                             }
 
                             return github.pullRequests.create({
                                 base: "master",
-                                owner: "mvgaliev",
+                                owner: LocalizationStringsUploader.ms,
                                 repo: visualName,
                                 head: "pbicvbot:master",
                                 title: "Localization strings update"
